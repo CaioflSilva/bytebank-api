@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Bytebank  banco Digital </title>
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+          background: #f4f7fb;
+          color: #1f2937;
+          padding: 24px;
+        }
+
+        .container {
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+
+        .header {
+          margin-bottom: 24px;
+        }
+
+        .header h1 {
+          font-size: 32px;
+          margin-bottom: 8px;
+          color: #0f172a;
+        }
+
+        .header p {
+          color: #475569;
+          font-size: 15px;
+        }
+
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 20px;
+          margin-bottom: 24px;
+        }
+
+        .card {
+          background: white;
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+          font-size: 20px;
+          margin-bottom: 16px;
+          color: #0f172a;
+        }
+
+        .form-group {
+          margin-bottom: 14px;
+        }
+
+        .form-group label {
+          display: block;
+          margin-bottom: 6px;
+          font-weight: bold;
+          color: #334155;
+          font-size: 14px;
+        }
+
+        .form-group input {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #cbd5e1;
+          border-radius: 10px;
+          outline: none;
+          font-size: 14px;
+        }
+
+        .form-group input:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        button {
+          width: 100%;
+          padding: 12px;
+          border: none;
+          border-radius: 10px;
+          background: #2563eb;
+          color: white;
+          font-size: 15px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: 0.2s ease;
+        }
+
+        button:hover {
+          background: #1d4ed8;
+        }
+
+        button.secondary {
+          background: #0f766e;
+        }
+
+        button.secondary:hover {
+          background: #0d5f59;
+        }
+
+        button.warning {
+          background: #dc2626;
+        }
+
+        button.warning:hover {
+          background: #b91c1c;
+        }
+
+        button.dark {
+          background: #334155;
+        }
+
+        button.dark:hover {
+          background: #1f2937;
+        }
+
+        .resultado-busca {
+          margin-top: 14px;
+          padding: 14px;
+          border-radius: 12px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #334155;
+          font-size: 14px;
+          display: none;
+        }
+
+        .list-card {
+          background: white;
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .list-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+        }
+
+        .list-header h2 {
+          font-size: 22px;
+          color: #0f172a;
+        }
+
+        .list-header button {
+          width: auto;
+          padding: 10px 16px;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          overflow: hidden;
+          background: white;
+        }
+
+        thead {
+          background: #e2e8f0;
+        }
+
+        th, td {
+          text-align: left;
+          padding: 14px 12px;
+          border-bottom: 1px solid #e5e7eb;
+          font-size: 14px;
+          vertical-align: middle;
+        }
+
+        tbody tr:hover {
+          background: #f8fafc;
+        }
+
+        .status {
+          margin: 18px 0;
+          padding: 14px 16px;
+          border-radius: 12px;
+          font-size: 14px;
+          display: none;
+        }
+
+        .status.success {
+          display: block;
+          background: #dcfce7;
+          color: #166534;
+          border: 1px solid #86efac;
+        }
+
+        .status.error {
+          display: block;
+          background: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #fca5a5;
+        }
+
+        .empty {
+          text-align: center;
+          padding: 24px;
+          color: #64748b;
+        }
+
+        .acoes {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .btn-linha {
+          width: auto;
+          padding: 8px 12px;
+          font-size: 13px;
+        }
+
+        .btn-excluir-linha {
+          background: #dc2626;
+        }
+
+        .btn-excluir-linha:hover {
+          background: #b91c1c;
+        }
+
+        .btn-editar-linha {
+          background: #0f766e;
+        }
+
+        .btn-editar-linha:hover {
+          background: #0d5f59;
+        }
+
+        @media (max-width: 768px) {
+          body {
+            padding: 14px;
+          }
+
+          .header h1 {
+            font-size: 26px;
+          }
+
+          th, td {
+            font-size: 13px;
+            padding: 10px 8px;
+          }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>ByteBank</h1>
+
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Criar Conta</h2>
+            <form id="formCriarConta">
+                <div class="form-group">
+                    <label for="titular">Titular</label>
+                    <input type="text" id="titular" placeholder="Nome do titular" required/>
+                </div>
+                <div class="form-group">
+                    <label for="saldoInicial">Saldo inicial</label>
+                    <input type="number" id="saldoInicial" placeholder="0.00" step="0.01" min="0" required/>
+                </div>
+                <button type="submit">Criar conta</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Buscar Conta por ID</h2>
+            <form id="formBuscarConta">
+                <div class="form-group">
+                    <label for="buscarId">ID da conta</label>
+                    <input type="number" id="buscarId" placeholder="Ex.: 1" required/>
+                </div>
+                <button type="submit" class="dark">Buscar conta</button>
+            </form>
+            <div id="resultadoBusca" class="resultado-busca"></div>
+        </div>
+
+        <div class="card">
+            <h2>Atualizar Titular</h2>
+            <form id="formAtualizarTitular">
+                <div class="form-group">
+                    <label for="atualizarId">ID da conta</label>
+                    <input type="number" id="atualizarId" placeholder="Ex.: 1" required/>
+                </div>
+                <div class="form-group">
+                    <label for="novoTitular">Novo titular</label>
+                    <input type="text" id="novoTitular" placeholder="Novo nome do titular" required/>
+                </div>
+                <button type="submit" class="secondary">Atualizar titular</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Depositar</h2>
+            <form id="formDeposito">
+                <div class="form-group">
+                    <label for="depositoId">ID da conta</label>
+                    <input type="number" id="depositoId" placeholder="Ex.: 1" required/>
+                </div>
+                <div class="form-group">
+                    <label for="depositoValor">Valor</label>
+                    <input type="number" id="depositoValor" placeholder="0.00" step="0.01" min="0.01" required/>
+                </div>
+                <button type="submit" class="secondary">Depositar</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Sacar</h2>
+            <form id="formSaque">
+                <div class="form-group">
+                    <label for="saqueId">ID da conta</label>
+                    <input type="number" id="saqueId" placeholder="Ex.: 1" required/>
+                </div>
+                <div class="form-group">
+                    <label for="saqueValor">Valor</label>
+                    <input type="number" id="saqueValor" placeholder="0.00" step="0.01" min="0.01" required/>
+                </div>
+                <button type="submit" class="warning">Sacar</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Transferir</h2>
+            <form id="formTransferencia">
+                <div class="form-group">
+                    <label for="origem">Conta de origem</label>
+                    <input type="number" id="origem" placeholder="Ex.: 1" required/>
+                </div>
+                <div class="form-group">
+                    <label for="destino">Conta de destino</label>
+                    <input type="number" id="destino" placeholder="Ex.: 2" required/>
+                </div>
+                <div class="form-group">
+                    <label for="valorTransferencia">Valor</label>
+                    <input type="number" id="valorTransferencia" placeholder="0.00" step="0.01" min="0.01" required/>
+                </div>
+                <button type="submit">Transferir</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Excluir Conta</h2>
+            <form id="formExcluirConta">
+                <div class="form-group">
+                    <label for="excluirId">ID da conta</label>
+                    <input type="number" id="excluirId" placeholder="Ex.: 1" required/>
+                </div>
+                <button type="submit" class="warning">Excluir conta</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="list-card">
+        <div class="list-header">
+            <h2>Contas cadastradas</h2>
+            <button type="button" onclick="listarContas()">Atualizar lista</button>
+        </div>
+
+        <div id="tableWrapper">
+            <div class="empty">Nenhuma conta carregada ainda.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const statusBox = document.getElementById('status');
+    const resultadoBusca = document.getElementById('resultadoBusca');
+
+    function mostrarStatus(mensagem, tipo = 'success') {
+      statusBox.className = `status ${tipo}`;
+      statusBox.textContent = mensagem;
+    }
+
+    function limparStatus() {
+      statusBox.className = 'status';
+      statusBox.textContent = '';
+    }
+
+    function mostrarResultadoBusca(html) {
+      resultadoBusca.style.display = 'block';
+      resultadoBusca.innerHTML = html;
+    }
+
+    function limparResultadoBusca() {
+      resultadoBusca.style.display = 'none';
+      resultadoBusca.innerHTML = '';
+    }
+
+    function formatarMoeda(valor) {
+      return Number(valor).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    async function tratarResposta(response) {
+      const contentType = response.headers.get('content-type') || '';
+      let data = null;
+
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+
+      if (!response.ok) {
+        let mensagem = 'Erro ao processar a requisição.';
+
+        if (data?.message) {
+          mensagem = data.message;
+        }
+
+        if (data?.errors) {
+          const detalhes = Object.entries(data.errors)
+            .map(([campo, erro]) => `${campo}: ${erro}`)
+            .join(' | ');
+          mensagem += ` ${detalhes}`;
+        }
+
+        throw new Error(mensagem);
+      }
+
+      return data;
+    }
+
+    async function buscarConta(id) {
+      const response = await fetch(`/contas/${id}`);
+      return await tratarResposta(response);
+    }
+
+    async function excluirConta(id) {
+      limparStatus();
+
+      const confirmou = confirm(`Deseja realmente excluir a conta ${id}?`);
+      if (!confirmou) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/contas/${id}`, {
+          method: 'DELETE'
+        });
+
+        const data = await tratarResposta(response);
+        mostrarStatus(data.mensagem || 'Conta excluída com sucesso.', 'success');
+        limparResultadoBusca();
+        listarContas();
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    }
+
+    async function preencherAtualizacao(id, titular) {
+      document.getElementById('atualizarId').value = id;
+      document.getElementById('novoTitular').value = titular;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function listarContas() {
+      limparStatus();
+      const tableWrapper = document.getElementById('tableWrapper');
+
+      try {
+        const response = await fetch('/contas');
+        const contas = await tratarResposta(response);
+
+        if (!Array.isArray(contas) || contas.length === 0) {
+          tableWrapper.innerHTML = '<div class="empty">Nenhuma conta cadastrada.</div>';
+          return;
+        }
+
+        tableWrapper.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Titular</th>
+                <th>Saldo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${contas.map(conta => `
+                <tr>
+                  <td>${conta.id}</td>
+                  <td>${conta.titular}</td>
+                  <td>${formatarMoeda(conta.saldo)}</td>
+                  <td>
+                    <div class="acoes">
+                      <button class="btn-linha btn-editar-linha" type="button" onclick="preencherAtualizacao(${conta.id}, '${String(conta.titular).replace(/'/g, "\\'")}')">
+                        Editar
+                      </button>
+                      <button class="btn-linha btn-excluir-linha" type="button" onclick="excluirConta(${conta.id})">
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    }
+
+    document.getElementById('formCriarConta').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limparStatus();
+
+      const body = {
+        titular: document.getElementById('titular').value.trim(),
+        saldo: Number(document.getElementById('saldoInicial').value)
+      };
+
+      try {
+        const response = await fetch('/contas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await tratarResposta(response);
+        mostrarStatus(`Conta criada com sucesso. ID: ${data.id}`, 'success');
+        e.target.reset();
+        listarContas();
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    });
+
+    document.getElementById('formBuscarConta').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limparStatus();
+      limparResultadoBusca();
+
+      const id = document.getElementById('buscarId').value;
+
+      try {
+        const conta = await buscarConta(id);
+
+        mostrarResultadoBusca(`
+          <strong>Conta encontrada</strong><br><br>
+          <strong>ID:</strong> ${conta.id}<br>
+          <strong>Titular:</strong> ${conta.titular}<br>
+          <strong>Saldo:</strong> ${formatarMoeda(conta.saldo)}
+        `);
+
+        mostrarStatus('Busca realizada com sucesso.', 'success');
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    });
+
+    document.getElementById('formAtualizarTitular').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limparStatus();
+
+      const id = document.getElementById('atualizarId').value;
+      const body = {
+        titular: document.getElementById('novoTitular').value.trim()
+      };
+
+      try {
+        const response = await fetch(`/contas/${id}/titular`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await tratarResposta(response);
+        mostrarStatus(`Titular atualizado com sucesso para: ${data.titular}`, 'success');
+        e.target.reset();
+        listarContas();
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    });
+
+    document.getElementById('formDeposito').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limparStatus();
+
+      const id = document.getElementById('depositoId').value;
+      const body = {
+        valor: Number(document.getElementById('depositoValor').value)
+      };
+
+      try {
+        const response = await fetch(`/contas/${id}/deposito`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        await tratarResposta(response);
+        mostrarStatus('Depósito realizado com sucesso.', 'success');
+        e.target.reset();
+        listarContas();
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    });
+
+    document.getElementById('formSaque').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limparStatus();
+
+      const id = document.getElementById('saqueId').value;
+      const body = {
+        valor: Number(document.getElementById('saqueValor').value)
+      };
+
+      try {
+        const response = await fetch(`/contas/${id}/saque`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        await tratarResposta(response);
+        mostrarStatus('Saque realizado com sucesso.', 'success');
+        e.target.reset();
+        listarContas();
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    });
+
+    document.getElementById('formTransferencia').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limparStatus();
+
+      const body = {
+        origem: Number(document.getElementById('origem').value),
+        destino: Number(document.getElementById('destino').value),
+        valor: Number(document.getElementById('valorTransferencia').value)
+      };
+
+      try {
+        const response = await fetch('/contas/transferencia', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await tratarResposta(response);
+        mostrarStatus(data.mensagem || 'Transferência realizada com sucesso.', 'success');
+        e.target.reset();
+        listarContas();
+      } catch (error) {
+        mostrarStatus(error.message, 'error');
+      }
+    });
+
+    document.getElementById('formExcluirConta').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limparStatus();
+
+      const id = document.getElementById('excluirId').value;
+      await excluirConta(id);
+      e.target.reset();
+    });
+
+    window.addEventListener('load', () => {
+      listarContas();
+    });
+</script>
+</body>
+</html>
