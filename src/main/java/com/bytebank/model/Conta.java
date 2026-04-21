@@ -22,6 +22,9 @@ public class Conta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, length = 14)
+    private String cpf;
+
     @Column(nullable = false, length = 120)
     private String titular;
 

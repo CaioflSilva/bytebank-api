@@ -9,25 +9,31 @@ import com.bytebank.exception.RecursoNaoEncontradoException;
 import com.bytebank.exception.RegraDeNegocioException;
 import com.bytebank.model.Conta;
 import com.bytebank.repository.ContaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ContaService {
 
     private final ContaRepository repository;
 
-    public ContaService(ContaRepository repository) {
-        this.repository = repository;
-    }
-
     @Transactional
     public ContaResponse criar(ContaRequest request) {
+        validarCpf(request.getCpf());
+
+        if (repository.existsByCpf(request.getCpf())) {
+            throw new RegraDeNegocioException("Já existe uma conta cadastrada com o CPF: " + request.getCpf());
+        }
+
         Conta conta = Conta.builder()
+                .cpf(request.getCpf())
                 .titular(request.getTitular().trim())
                 .saldo(normalizarValor(request.getSaldo()))
                 .build();
@@ -36,11 +42,8 @@ public class ContaService {
     }
 
     @Transactional(readOnly = true)
-    public List<ContaResponse> listar() {
-        return repository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<ContaResponse> listar(Pageable pageable) {
+        return repository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -52,24 +55,20 @@ public class ContaService {
     public ContaResponse atualizarTitular(Long id, AtualizarTitularRequest request) {
         Conta conta = buscarEntidadePorId(id);
         conta.setTitular(request.getTitular().trim());
-
-        return toResponse(repository.save(conta));
+        return toResponse(conta);
     }
 
     @Transactional
     public ContaResponse depositar(Long id, BigDecimal valor) {
         validarValorPositivo(valor);
-
         Conta conta = buscarEntidadePorId(id);
         conta.setSaldo(conta.getSaldo().add(normalizarValor(valor)));
-
-        return toResponse(repository.save(conta));
+        return toResponse(conta);
     }
 
     @Transactional
     public ContaResponse sacar(Long id, BigDecimal valor) {
         validarValorPositivo(valor);
-
         Conta conta = buscarEntidadePorId(id);
         BigDecimal valorNormalizado = normalizarValor(valor);
 
@@ -78,7 +77,7 @@ public class ContaService {
         }
 
         conta.setSaldo(conta.getSaldo().subtract(valorNormalizado));
-        return toResponse(repository.save(conta));
+        return toResponse(conta);
     }
 
     @Transactional
@@ -100,9 +99,6 @@ public class ContaService {
         origem.setSaldo(origem.getSaldo().subtract(valorNormalizado));
         destino.setSaldo(destino.getSaldo().add(valorNormalizado));
 
-        repository.save(origem);
-        repository.save(destino);
-
         return new MensagemResponse("Transferência realizada com sucesso");
     }
 
@@ -116,6 +112,17 @@ public class ContaService {
 
         repository.delete(conta);
         return new MensagemResponse("Conta excluída com sucesso");
+    }
+
+    // ==================== PRIVADOS ====================
+
+    private ContaResponse toResponse(Conta conta) {
+        return new ContaResponse(
+                conta.getId(),
+                conta.getCpf(),
+                conta.getTitular(),
+                conta.getSaldo()
+        );
     }
 
     private Conta buscarEntidadePorId(Long id) {
@@ -133,11 +140,26 @@ public class ContaService {
         return valor.setScale(2, RoundingMode.HALF_EVEN);
     }
 
-    private ContaResponse toResponse(Conta conta) {
-        return new ContaResponse(
-                conta.getId(),
-                conta.getTitular(),
-                conta.getSaldo()
-        );
+    private void validarCpf(String cpf) {
+        String digitos = cpf.replaceAll("[^0-9]", "");
+
+        if (digitos.length() != 11 || digitos.chars().distinct().count() == 1) {
+            throw new RegraDeNegocioException("CPF inválido: " + cpf);
+        }
+
+        int soma1 = 0;
+        for (int i = 0; i < 9; i++) soma1 += Character.getNumericValue(digitos.charAt(i)) * (10 - i);
+        int digito1 = 11 - (soma1 % 11);
+        if (digito1 >= 10) digito1 = 0;
+
+        int soma2 = 0;
+        for (int i = 0; i < 10; i++) soma2 += Character.getNumericValue(digitos.charAt(i)) * (11 - i);
+        int digito2 = 11 - (soma2 % 11);
+        if (digito2 >= 10) digito2 = 0;
+
+        if (Character.getNumericValue(digitos.charAt(9)) != digito1 ||
+                Character.getNumericValue(digitos.charAt(10)) != digito2) {
+            throw new RegraDeNegocioException("CPF inválido: " + cpf);
+        }
     }
 }
